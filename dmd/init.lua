@@ -45,7 +45,7 @@ local function showCompletionList(r)
 	buffer.auto_c_choose_single = false;
 	buffer.auto_c_max_width = 0
 	local completions = {}
-	for symbol, kind in r:gmatch("([^%s]+)\t(%a)\n") do
+	for symbol, kind in r:gmatch("([^%s]+)\t(%a)\r?\n") do
 		completion = symbol
 		if kind == "k" then
 			completion = completion .. "?5"
@@ -105,7 +105,7 @@ end
 local function showCalltips(calltip)
 	currentCalltip = 1
 	calltips = {}
-	for tip in calltip:gmatch("(.-)\n") do
+	for tip in calltip:gmatch("(.-)\r?\n") do
 		if tip ~= "calltips" then
 			table.insert(calltips, tip)
 		end
@@ -194,7 +194,9 @@ end
 -- the buffer. Automatically uses Textadept's normal dialogs or textredux lists.
 local function symbolIndex()
 	local fileName = os.tmpname()
-	local tmpFile = io.open(fileName, "w")
+	local mode = "w"
+	if _G.WIN32 then mode = "wb" end
+	local tmpFile = io.open(fileName, mode)
 	tmpFile:write(buffer:get_text():sub(1, buffer.length))
 	tmpFile:flush()
 	tmpFile:close()
@@ -205,10 +207,10 @@ local function symbolIndex()
 	local symbolList = {}
 	local i = 0
 
-	for line in r:gmatch("(.-)\n") do
+	for line in r:gmatch("(.-)\r?\n") do
 		if not line:match("^!") then
 			local name, file, lineNumber, tagType, meta = line:match(
-				"([~%w_]+)\t([%w/_ ]+)\t(%d+);\"\t(%w)\t?(.*)")
+				"([~%w_]+)\t([%w/\\._ ]+)\t(%d+);\"\t(%w)\t?(.*)")
 			if package.loaded['textredux'] then
 				table.insert(symbolList, {name, expandCtagsType(tagType), expandContext(meta), lineNumber})
 			else
@@ -249,7 +251,7 @@ end
 local function autocomplete()
 	registerImages()
 	local r = runDCDClient("")
-	if r ~= "\n" then
+	if r ~= "\n" and r ~= "\r\n" then
 		if r:match("^identifiers.*") then
 			showCompletionList(r)
 		else
@@ -275,8 +277,8 @@ events.connect(events.FILE_AFTER_SAVE, function()
 	if buffer:get_lexer() ~= "dmd" then return end
 	buffer:annotation_clear_all()
 	local command = M.PATH_TO_DSCANNER .. " --styleCheck 2>&1 " .. buffer.filename
-	local p = io.popen(command)
-	for line in p:lines() do
+	local p = spawn(command)
+	for line in p:read("*a"):gmatch("(.-)\r?\n") do
 		lineNumber, column, level, message = string.match(line, "^.-%((%d+):(%d+)%)%[(%w+)%]: (.+)$")
 		if lineNumber == nil then return end
 		local l = tonumber(lineNumber) - 1
@@ -308,17 +310,19 @@ events.connect(events.CALL_TIP_CLICK, function(arrow)
 	end
 end)
 
--- Spawn the dcd-server
-M.serverProcess = spawn(M.PATH_TO_DCD_SERVER)
+if not _G.WIN32 then
+	-- Spawn the dcd-server
+	M.serverProcess = spawn(M.PATH_TO_DCD_SERVER)
 
--- Set an event handler that shuts down the DCD server, but only if this module
--- successfully started it. Do nothing if somebody else owns the server instance
-events.connect(events.QUIT, function()
-	if (M.serverProcess:status() == running) then
-		spawn("dcd-client", {"--shutdown"})
-		if (M.serverProcess:status() == "running") then M.serverProcess:kill() end
-	end
-end)
+	-- Set an event handler that shuts down the DCD server, but only if this module
+	-- successfully started it. Do nothing if somebody else owns the server instance
+	events.connect(events.QUIT, function()
+		if (M.serverProcess:status() == running) then
+			spawn(M.PATH_TO_DCD_CLIENT .. " --shutdown")
+			if (M.serverProcess:status() == "running") then M.serverProcess:kill() end
+		end
+	end)
+end
 
 -- Key bindings
 keys.dmd = {
