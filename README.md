@@ -2,7 +2,7 @@ textadept-d
 ===========
 D language plugin for Textadept
 
-![Screenshot](images/screenshot.png)
+![Screenshot](img/screenshot.png)
 
 ## Features
 * Code autocomplete and DDOC display (DCD)
