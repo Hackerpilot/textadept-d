@@ -276,7 +276,7 @@ end)
 events.connect(events.FILE_AFTER_SAVE, function()
 	if buffer:get_lexer() ~= "dmd" then return end
 	buffer:annotation_clear_all()
-	local command = M.PATH_TO_DSCANNER .. " --styleCheck 2>&1 " .. buffer.filename
+	local command = M.PATH_TO_DSCANNER .. " --styleCheck " .. buffer.filename
 	local p = spawn(command)
 	for line in p:read("*a"):gmatch("(.-)\r?\n") do
 		lineNumber, column, level, message = string.match(line, "^.-%((%d+):(%d+)%)%[(%w+)%]: (.+)$")
