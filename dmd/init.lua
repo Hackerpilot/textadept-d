@@ -13,7 +13,7 @@ local lineDict = {}
 local calltips = {}
 local currentCalltip = 1
 
-M.PATH_TO_DCD_SERVER = "dcd-client"
+M.PATH_TO_DCD_SERVER = "dcd-server"
 M.PATH_TO_DCD_CLIENT = "dcd-client"
 M.PATH_TO_DSCANNER = "dscanner"
 
@@ -24,19 +24,36 @@ textadept.run.error_patterns.dmd = {
 	filename = 1, line = 2, message = 3
 }
 
+M.kindToIconMapping = {}
+M.kindToIconMapping['k'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['v'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['e'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['s'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['g'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['u'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['m'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['c'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['i'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['f'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['M'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['P'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['l'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['t'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['T'] = M.kindToIconMapping['t']
+
 local function registerImages()
-	buffer:register_image(1, icons.FIELD)
-	buffer:register_image(2, icons.FUNCTION)
-	buffer:register_image(3, icons.PACKAGE)
-	buffer:register_image(4, icons.MODULE)
-	buffer:register_image(5, icons.KEYWORD)
-	buffer:register_image(6, icons.CLASS)
-	buffer:register_image(7, icons.UNION)
-	buffer:register_image(8, icons.STRUCT)
-	buffer:register_image(9, icons.INTERFACE)
-	buffer:register_image(10, icons.ENUM)
-	buffer:register_image(11, icons.ALIAS)
-	buffer:register_image(12, icons.TEMPLATE)
+	buffer:register_image(M.kindToIconMapping['v'], icons.FIELD)
+	buffer:register_image(M.kindToIconMapping['f'], icons.FUNCTION)
+	buffer:register_image(M.kindToIconMapping['P'], icons.PACKAGE)
+	buffer:register_image(M.kindToIconMapping['M'], icons.MODULE)
+	buffer:register_image(M.kindToIconMapping['k'], icons.KEYWORD)
+	buffer:register_image(M.kindToIconMapping['c'], icons.CLASS)
+	buffer:register_image(M.kindToIconMapping['u'], icons.UNION)
+	buffer:register_image(M.kindToIconMapping['s'], icons.STRUCT)
+	buffer:register_image(M.kindToIconMapping['i'], icons.INTERFACE)
+	buffer:register_image(M.kindToIconMapping['g'], icons.ENUM)
+	buffer:register_image(M.kindToIconMapping['l'], icons.ALIAS)
+	buffer:register_image(M.kindToIconMapping['t'], icons.TEMPLATE)
 end
 
 local function showCompletionList(r)
@@ -46,37 +63,7 @@ local function showCompletionList(r)
 	buffer.auto_c_max_width = 0
 	local completions = {}
 	for symbol, kind in r:gmatch("([^%s]+)\t(%a)\r?\n") do
-		completion = symbol
-		if kind == "k" then
-			completion = completion .. "?5"
-		elseif kind == "v" then
-			completion = completion .. "?1"
-		elseif kind == "e" then
-			completion = completion .. "?10"
-		elseif kind == "s" then
-			completion = completion .. "?8"
-		elseif kind == "g" then
-			completion = completion .. "?10"
-		elseif kind == "u" then
-			completion = completion .. "?7"
-		elseif kind == "m" then
-			completion = completion .. "?1"
-		elseif kind == "c" then
-			completion = completion .. "?6"
-		elseif kind == "i" then
-			completion = completion .. "?9"
-		elseif kind == "f" then
-			completion = completion .. "?2"
-		elseif kind == "M" then
-			completion = completion .. "?4"
-		elseif kind == "P" then
-			completion = completion .. "?3"
-		elseif kind == "l" then
-			completion = completion .. "?11"
-		elseif kind == "t" or kind == "T" then
-			completion = completion .. "?12"
-		end
-		completions[#completions + 1] = completion
+		completions[#completions + 1] = symbol .. "?" .. M.kindToIconMapping[kind]
 	end
 	table.sort(completions, function(a, b) return string.upper(a) < string.upper(b) end)
 	local charactersEntered = buffer.current_pos - buffer:word_start_position(buffer.current_pos)
@@ -314,12 +301,19 @@ if not _G.WIN32 then
 	-- Spawn the dcd-server
 	M.serverProcess = spawn(M.PATH_TO_DCD_SERVER)
 
-	-- Set an event handler that shuts down the DCD server, but only if this module
-	-- successfully started it. Do nothing if somebody else owns the server instance
+	-- Set an event handler that shuts down the DCD server, but only if this
+	-- module successfully started it. Do nothing if somebody else owns the
+	-- server instance
 	events.connect(events.QUIT, function()
-		if (M.serverProcess:status() == running) then
+		if (M.serverProcess:status() == "running") then
 			spawn(M.PATH_TO_DCD_CLIENT .. " --shutdown")
-			if (M.serverProcess:status() == "running") then M.serverProcess:kill() end
+			_G.timeout(1, function()
+				if (M.serverProcess:status() == "running") then
+					M.serverProcess:kill()
+				end
+			end)
+		else
+			print('Warning: something other than us killed the DCD server')
 		end
 	end)
 end
@@ -327,8 +321,8 @@ end
 -- Key bindings
 keys.dmd = {
 	[keys.LANGUAGE_MODULE_PREFIX] = {
-		m = { io.open_file,
-		(_USERHOME..'/modules/dmd/init.lua'):iconv('UTF-8', _CHARSET) },
+		m = { io.open_file, (_USERHOME..'/modules/dmd/init.lua'):iconv(
+			'UTF-8', _CHARSET) }
 	},
 	['a\n'] = {cstyle.newline},
 	['s\n'] = {cstyle.newline_semicolon},
@@ -343,6 +337,11 @@ keys.dmd = {
 	['cG'] = {gotoDeclaration},
 	['cM'] = {symbolIndex},
 }
+
+if not _G.WIN32 then
+	keys.dmd[keys.LANGUAGE_MODULE_PREFIX]['d']= { io.open_file,
+		(_USERHOME..'/../.config/dcd/dcd.conf')}
+end
 
 -- Snippets
 if type(snippets) == 'table' then
