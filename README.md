@@ -22,8 +22,8 @@ D language plugin for Textadept
 * Download textadept-d and place the "dmd" folder in "~/.textadept/modules/" ("$HOME\.textadept\modules" on Windows)
 * Download and build [DCD](https://github.com/Hackerpilot/DCD/)
 * Download and build [D-Scanner](https://github.com/Hackerpilot/Dscanner/)
-* Place the dcd-client binary on your $PATH, or edit the line in dmd/init.lua that says ```M.PATH_TO_DCD_SERVER = "dcd-server"```
-* Place the dcd-server binary on your $PATH, or edit the line in dmd/init.lua that says ```M.PATH_TO_DCD_CLIENT = "dcd-client"```
+* Place the dcd-server binary on your $PATH, or edit the line in dmd/init.lua that says ```M.PATH_TO_DCD_SERVER = "dcd-server"```
+* Place the dcd-client binary on your $PATH, or edit the line in dmd/init.lua that says ```M.PATH_TO_DCD_CLIENT = "dcd-client"```
 * Place the dscanner binary on your $PATH, or edit the line in dmd/init.lua that says ```M.PATH_TO_DSCANNER = "dscanner"```
 
 ## Key Bindings
