@@ -25,40 +25,38 @@ textadept.run.error_patterns.dmd = {
 }
 
 M.kindToIconMapping = {}
-M.kindToIconMapping['k'] = _SCINTILLA.next_image_type()
-M.kindToIconMapping['v'] = _SCINTILLA.next_image_type()
-M.kindToIconMapping['e'] = _SCINTILLA.next_image_type()
-M.kindToIconMapping['s'] = _SCINTILLA.next_image_type()
-M.kindToIconMapping['g'] = _SCINTILLA.next_image_type()
-M.kindToIconMapping['u'] = _SCINTILLA.next_image_type()
-M.kindToIconMapping['m'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['c'] = _SCINTILLA.next_image_type()
-M.kindToIconMapping['i'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['e'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['f'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['i'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['k'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['l'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['M'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['P'] = _SCINTILLA.next_image_type()
-M.kindToIconMapping['l'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['s'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['t'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['u'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['v'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['m'] = M.kindToIconMapping['v']
+M.kindToIconMapping['g'] = M.kindToIconMapping['e']
 M.kindToIconMapping['T'] = M.kindToIconMapping['t']
 
 local function registerImages()
-	buffer:register_image(M.kindToIconMapping['v'], icons.FIELD)
-	buffer:register_image(M.kindToIconMapping['f'], icons.FUNCTION)
-	buffer:register_image(M.kindToIconMapping['P'], icons.PACKAGE)
-	buffer:register_image(M.kindToIconMapping['M'], icons.MODULE)
-	buffer:register_image(M.kindToIconMapping['k'], icons.KEYWORD)
 	buffer:register_image(M.kindToIconMapping['c'], icons.CLASS)
-	buffer:register_image(M.kindToIconMapping['u'], icons.UNION)
-	buffer:register_image(M.kindToIconMapping['s'], icons.STRUCT)
+	buffer:register_image(M.kindToIconMapping['e'], icons.ENUM)
+	buffer:register_image(M.kindToIconMapping['f'], icons.FUNCTION)
 	buffer:register_image(M.kindToIconMapping['i'], icons.INTERFACE)
-	buffer:register_image(M.kindToIconMapping['g'], icons.ENUM)
+	buffer:register_image(M.kindToIconMapping['k'], icons.KEYWORD)
 	buffer:register_image(M.kindToIconMapping['l'], icons.ALIAS)
+	buffer:register_image(M.kindToIconMapping['M'], icons.MODULE)
+	buffer:register_image(M.kindToIconMapping['P'], icons.PACKAGE)
+	buffer:register_image(M.kindToIconMapping['s'], icons.STRUCT)
 	buffer:register_image(M.kindToIconMapping['t'], icons.TEMPLATE)
+	buffer:register_image(M.kindToIconMapping['u'], icons.UNION)
+	buffer:register_image(M.kindToIconMapping['v'], icons.FIELD)
 end
 
 local function showCompletionList(r)
-	registerImages()
-	local setting = buffer.auto_c_choose_single
 	buffer.auto_c_choose_single = false;
 	buffer.auto_c_max_width = 0
 	local completions = {}
@@ -76,8 +74,9 @@ local function showCompletionList(r)
 			or prevChar == string.byte('[') then
 		charactersEntered = 0
 	end
+	if not buffer:auto_c_active() then registerImages() end
+	local setting = buffer.auto_c_choose_single
 	buffer:auto_c_show(charactersEntered, table.concat(completions, " "))
-	--buffer.auto_c_fill_ups = "(.["
 	buffer.auto_c_choose_single = setting
 end
 
@@ -236,7 +235,7 @@ local function symbolIndex()
 end
 
 local function autocomplete()
-	registerImages()
+	if not buffer:auto_c_active() then registerImages() end
 	local r = runDCDClient("")
 	if r ~= "\n" and r ~= "\r\n" then
 		if r:match("^identifiers.*") then
@@ -254,8 +253,12 @@ end
 events.connect(events.CHAR_ADDED, function(ch)
 	if buffer:get_lexer() ~= "dmd" or ch > 255 then return end
 	if string.char(ch) == '(' or string.char(ch) == '.' or string.char(ch) == ':' then
+--		local setting = buffer.auto_c_choose_single
+--		buffer.auto_c_choose_single = false
 		autocomplete(ch)
+--		buffer.auto_c_choose_single = setting
 	end
+
 end)
 
 -- Run dscanner's static analysis after saves and print the warnings and errors
