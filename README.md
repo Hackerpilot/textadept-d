@@ -32,6 +32,7 @@ Key|Action
 *Ctrl+{*|Open brace and automatically indent next line
 *Ctrl+Enter*|Autocomplete
 *Ctrl+Shift+G*|Go to declaration of symbol at cursor
+*Ctrl+Alt+Shift+G*|Go back after jumping to declaration
 *Ctrl+Shift+M*|Display symbol index for current file
 *Ctrl+;*|Go to end of line, insert semicolon
 *Shift+Enter*|Go to end of line, insert semicolon, insert newline

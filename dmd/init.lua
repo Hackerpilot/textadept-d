@@ -128,11 +128,38 @@ local function showDoc()
 	end
 end
 
-local function gotoDeclaration()
+
+M.gotoStack = {}
+
+function M.goBack()
+	if #M.gotoStack == 0 then return end
+	local top = M.gotoStack[#M.gotoStack]
+	ui.goto_view(top.view)
+	if top.file ~= nil then
+		ui.goto_file(top.file)
+	else
+		if top.buffer > _BUFFERS then
+			table.remove(M.gotoStack)
+			return
+		end
+		view:goto_buffer(top.buffer)
+	end
+	buffer:goto_line(top.line)
+	buffer:vertical_centre_caret()
+	table.remove(M.gotoStack) -- pop last item
+end
+
+function M.gotoDeclaration()
 	local r = runDCDClient("-l")
 	if r ~= "Not found\n" then
 		path, position = r:match("^(.-)\t(%d+)")
 		if (path ~= nil and position ~= nil) then
+			table.insert(M.gotoStack, {
+				line = buffer:line_from_position(buffer.current_pos),
+				view = _VIEWS[_G.view],
+				file = buffer.filename,
+				buffer = _BUFFERS[_G.buffer]
+			})
 			if (path ~= "stdin") then
 				io.open_file(path)
 			end
@@ -253,12 +280,11 @@ end
 events.connect(events.CHAR_ADDED, function(ch)
 	if buffer:get_lexer() ~= "dmd" or ch > 255 then return end
 	if string.char(ch) == '(' or string.char(ch) == '.' or string.char(ch) == ':' then
---		local setting = buffer.auto_c_choose_single
---		buffer.auto_c_choose_single = false
+		local setting = buffer.auto_c_choose_single
+		buffer.auto_c_choose_single = false
 		autocomplete(ch)
---		buffer.auto_c_choose_single = setting
+		buffer.auto_c_choose_single = setting
 	end
-
 end)
 
 -- Run dscanner's static analysis after saves and print the warnings and errors
@@ -337,7 +363,8 @@ keys.dmd = {
 	['cH'] = {showDoc},
 	['down'] = {cycleCalltips, 1},
 	['up'] = {cycleCalltips, -1},
-	['cG'] = {gotoDeclaration},
+	['cG'] = {M.gotoDeclaration},
+	['caG'] = {M.goBack},
 	['cM'] = {symbolIndex},
 }
 
