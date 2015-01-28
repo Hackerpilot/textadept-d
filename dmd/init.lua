@@ -134,9 +134,8 @@ M.gotoStack = {}
 function M.goBack()
 	if #M.gotoStack == 0 then return end
 	local top = M.gotoStack[#M.gotoStack]
-	ui.goto_view(top.view)
 	if top.file ~= nil then
-		ui.goto_file(top.file)
+		ui.goto_file(top.file, false, _VIEWS[top.view])
 	else
 		if top.buffer > _BUFFERS then
 			table.remove(M.gotoStack)
@@ -156,12 +155,12 @@ function M.gotoDeclaration()
 		if (path ~= nil and position ~= nil) then
 			table.insert(M.gotoStack, {
 				line = buffer:line_from_position(buffer.current_pos),
-				view = _VIEWS[_G.view],
 				file = buffer.filename,
-				buffer = _BUFFERS[_G.buffer]
+				buffer = _BUFFERS[_G.buffer],
+				view = _VIEWS[_G.view]
 			})
 			if (path ~= "stdin") then
-				io.open_file(path)
+				ui.goto_file(path, false, _G.view)
 			end
 			buffer:goto_pos(tonumber(position))
 			buffer:vertical_centre_caret()
@@ -328,7 +327,7 @@ end)
 
 if not _G.WIN32 then
 	-- Spawn the dcd-server
-	M.serverProcess = spawn(M.PATH_TO_DCD_SERVER)
+	M.serverProcess = spawn(M.PATH_TO_DCD_SERVER, nil, function() end, function() end)
 
 	-- Set an event handler that shuts down the DCD server, but only if this
 	-- module successfully started it. Do nothing if somebody else owns the
