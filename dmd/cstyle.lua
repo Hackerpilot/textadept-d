@@ -81,7 +81,7 @@ function M.match_brace_indent()
 	return false
 end
 
--- Called this when the enter key is pressed
+-- Call this when the enter key is pressed
 function M.enter_key_pressed()
 	if buffer:auto_c_active() then return false end
 	buffer:begin_undo_action()
