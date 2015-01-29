@@ -84,8 +84,8 @@ end
 -- Called this when the enter key is pressed
 function M.enter_key_pressed()
 	if buffer:auto_c_active() then return false end
-	buffer:new_line()
 	buffer:begin_undo_action()
+	buffer:new_line()
 	local cont = M.indent_after_brace()
 	if cont then
 		cont = continue_block_comment("/**", "*", "*/", "/%*", "%*", "%*/")
