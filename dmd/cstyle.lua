@@ -37,14 +37,16 @@ function M.indent_after_brace()
 	local curr_line = buffer:get_line(line_num)
 	if prev_line:find("{%s*$") then
 		local indent = buffer.line_indentation[line_num - 1]
+		local new_indent = indent
+		if buffer.indent == 0 then new_indent = new_indent + buffer.tab_width end
 		if curr_line:find("}") then
 			buffer:new_line()
-			buffer.line_indentation[line_num] = indent + buffer.indent
+			buffer.line_indentation[line_num] = new_indent
 			buffer.line_indentation[line_num + 1] = indent
 			buffer:line_up()
 			buffer:line_end()
 		else
-			buffer.line_indentation[line_num] = indent + buffer.indent
+			buffer.line_indentation[line_num] = new_indent
 			buffer:line_end()
 		end
 		return false
