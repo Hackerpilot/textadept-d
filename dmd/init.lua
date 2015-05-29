@@ -118,7 +118,7 @@ local function runDCDClient(args)
 	local p = spawn(command)
 	p:write(buffer:get_text():sub(1, buffer.length))
 	p:close()
-	return p:read("*a")
+	return p:read("*a") or ""
 end
 
 local function showDoc()
