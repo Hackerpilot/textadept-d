@@ -118,7 +118,7 @@ local function runDCDClient(args)
 	local p = spawn(command)
 	p:write(buffer:get_text():sub(1, buffer.length))
 	p:close()
-	return p:read("*a")
+	return p:read("*a") or ""
 end
 
 local function showDoc()
@@ -293,7 +293,8 @@ events.connect(events.FILE_AFTER_SAVE, function()
 	buffer:annotation_clear_all()
 	local command = M.PATH_TO_DSCANNER .. " --styleCheck " .. buffer.filename
 	local p = spawn(command)
-	for line in p:read("*a"):gmatch("(.-)\r?\n") do
+	local result = p:read("*a") or ""
+	for line in result:gmatch("(.-)\r?\n") do
 		lineNumber, column, level, message = string.match(line, "^.-%((%d+):(%d+)%)%[(%w+)%]: (.+)$")
 		if lineNumber == nil then return end
 		local l = tonumber(lineNumber) - 1
