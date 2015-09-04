@@ -184,15 +184,15 @@ end
 
 -- Expands ctags type abbreviations to full words
 local function expandCtagsType(tagType)
-    if tagType == "g" then return "enum"
-    elseif tagType == "e" then return ""
-    elseif tagType == "v" then return "variable"
-    elseif tagType == "i" then return "interface"
-    elseif tagType == "c" then return "class"
-    elseif tagType == "s" then return "struct"
-    elseif tagType == "f" then return "function"
-    elseif tagType == "u" then return "union"
-    elseif tagType == "T" then return "template"
+	if tagType == "g" then return "enum"
+	elseif tagType == "e" then return ""
+	elseif tagType == "v" then return "variable"
+	elseif tagType == "i" then return "interface"
+	elseif tagType == "c" then return "class"
+	elseif tagType == "s" then return "struct"
+	elseif tagType == "f" then return "function"
+	elseif tagType == "u" then return "union"
+	elseif tagType == "T" then return "template"
 	else return "" end
 end
 
@@ -348,7 +348,7 @@ end
 
 -- Key bindings
 keys.dmd = {
-	[keys.LANGUAGE_MODULE_PREFIX] = {
+	['cat'] = {
 		m = { io.open_file, (_USERHOME..'/modules/dmd/init.lua'):iconv(
 			'UTF-8', _CHARSET) }
 	},
@@ -365,10 +365,17 @@ keys.dmd = {
 	['cG'] = {M.gotoDeclaration},
 	['caG'] = {M.goBack},
 	['cM'] = {symbolIndex},
+	['f7'] = function()
+		if buffer.use_tabs then
+			textadept.editing.filter_through("dfmt --indent_style=tab")
+		else
+			textadept.editing.filter_through("dfmt --indent_style=space")
+		end
+	end
 }
 
 if not _G.WIN32 then
-	keys.dmd[keys.LANGUAGE_MODULE_PREFIX]['d']= { io.open_file,
+	keys.dmd['cat']['d']= { io.open_file,
 		(_USERHOME..'/../.config/dcd/dcd.conf')}
 end
 
