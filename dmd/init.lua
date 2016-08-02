@@ -13,10 +13,10 @@ local lineDict = {}
 local calltips = {}
 local currentCalltip = 1
 
-M.PATH_TO_DCD_SERVER = "/home/alaran/bin/dcd-server"
-M.PATH_TO_DCD_CLIENT = "/home/alaran/bin/dcd-client"
-M.PATH_TO_DSCANNER = "/home/alaran/bin/dscanner"
-M.PATH_TO_DFMT = "/home/alaran/bin/dfmt"
+M.PATH_TO_DCD_SERVER = "dcd-server"
+M.PATH_TO_DCD_CLIENT = "dcd-client"
+M.PATH_TO_DSCANNER = "dscanner"
+M.PATH_TO_DFMT = "dfmt"
 
 textadept.editing.comment_string.dmd = '//'
 textadept.run.compile_commands.dmd = 'dmd -c -o- %(filename)'
