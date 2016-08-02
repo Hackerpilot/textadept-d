@@ -13,9 +13,10 @@ local lineDict = {}
 local calltips = {}
 local currentCalltip = 1
 
-M.PATH_TO_DCD_SERVER = "dcd-server"
-M.PATH_TO_DCD_CLIENT = "dcd-client"
-M.PATH_TO_DSCANNER = "dscanner"
+M.PATH_TO_DCD_SERVER = "/home/alaran/bin/dcd-server"
+M.PATH_TO_DCD_CLIENT = "/home/alaran/bin/dcd-client"
+M.PATH_TO_DSCANNER = "/home/alaran/bin/dscanner"
+M.PATH_TO_DFMT = "/home/alaran/bin/dfmt"
 
 textadept.editing.comment_string.dmd = '//'
 textadept.run.compile_commands.dmd = 'dmd -c -o- %(filename)'
@@ -349,36 +350,27 @@ end
 
 -- Key bindings
 keys.dmd = {
-	['cat'] = {
-		m = { io.open_file, (_USERHOME..'/modules/dmd/init.lua'):iconv(
-			'UTF-8', _CHARSET) }
-	},
-	['a\n'] = {cstyle.newline},
-	['s\n'] = {cstyle.newline_semicolon},
-	['c;'] = {cstyle.endline_semicolon},
-	['}'] = {cstyle.match_brace_indent},
-	['c{'] = {cstyle.openBraceMagic, true},
-	['\n'] = {cstyle.enter_key_pressed},
-	['c\n'] = {autocomplete},
-	['cH'] = {showDoc},
-	['down'] = {cycleCalltips, 1},
-	['up'] = {cycleCalltips, -1},
-	['cG'] = {M.gotoDeclaration},
-	['caG'] = {M.goBack},
-	['cM'] = {symbolIndex},
+	['a\n'] = cstyle.newline,
+	['s\n'] = cstyle.newline_semicolon,
+	['c;'] = cstyle.endline_semicolon,
+	['}'] = cstyle.match_brace_indent,
+	['c{'] = function() return cstyle.openBraceMagic(true) end,
+	['\n'] = cstyle.enter_key_pressed,
+	['c\n'] = autocomplete,
+	['cH'] = showDoc,
+	['down'] = function() return cycleCalltips(1) end,
+	['up'] = function() return cycleCalltips(-1) end,
+	['cG'] = M.gotoDeclaration,
+	['caG'] = M.goBack,
+	['cM'] = symbolIndex,
 	['f7'] = function()
 		if buffer.use_tabs then
-			textadept.editing.filter_through("dfmt --indent_style=tab")
+			textadept.editing.filter_through(M.PATH_TO_DFMT .. " --indent_style=tab")
 		else
-			textadept.editing.filter_through("dfmt --indent_style=space")
+			textadept.editing.filter_through(M.PATH_TO_DFMT .. " --indent_style=space")
 		end
 	end
 }
-
-if not _G.WIN32 then
-	keys.dmd['cat']['d']= { io.open_file,
-		(_USERHOME..'/../.config/dcd/dcd.conf')}
-end
 
 -- Snippets
 if type(snippets) == 'table' then
