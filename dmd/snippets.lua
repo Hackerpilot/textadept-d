@@ -170,7 +170,9 @@ private:
 {
 	%0
 }]],
-	mem = 'm_%1 = %1;\n%0',
+	mem = 'this.%1 = %1;\n%0',
+	dump = 'writeln("%1 = ", %1);',
+	trace = 'writeln(__FILE__, " ", __LINE__);',
 	wf = 'writef(%0);',
 	wl = 'writeln(%0);',
 	wfl = 'writefln(%0);',
