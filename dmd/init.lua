@@ -26,9 +26,12 @@ textadept.run.error_patterns.dmd = {
 }
 
 M.kindToIconMapping = {}
+M.kindToIconMapping['a'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['A'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['c'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['e'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['f'] = _SCINTILLA.next_image_type()
+M.kindToIconMapping['h'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['i'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['k'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['l'] = _SCINTILLA.next_image_type()
@@ -38,8 +41,10 @@ M.kindToIconMapping['s'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['t'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['u'] = _SCINTILLA.next_image_type()
 M.kindToIconMapping['v'] = _SCINTILLA.next_image_type()
-M.kindToIconMapping['m'] = M.kindToIconMapping['v']
+
 M.kindToIconMapping['g'] = M.kindToIconMapping['e']
+M.kindToIconMapping['m'] = M.kindToIconMapping['v']
+M.kindToIconMapping['p'] = M.kindToIconMapping['t']
 M.kindToIconMapping['T'] = M.kindToIconMapping['t']
 
 local function registerImages()
@@ -116,7 +121,7 @@ end
 
 local function runDCDClient(args)
 	local command = M.PATH_TO_DCD_CLIENT .. " " .. args .. " -c" .. buffer.current_pos
-	local p = spawn(command)
+	local p = os.spawn(command)
 	p:write(buffer:get_text():sub(1, buffer.length))
 	p:close()
 	return p:read("*a") or ""
@@ -214,7 +219,7 @@ local function symbolIndex()
 	tmpFile:flush()
 	tmpFile:close()
 	local command = M.PATH_TO_DSCANNER .. " --ctags " .. fileName
-	local p = spawn(command)
+	local p = os.spawn(command)
 	local r = p:read("*a")
 	os.remove(fileName)
 	local symbolList = {}
@@ -293,7 +298,7 @@ events.connect(events.FILE_AFTER_SAVE, function()
 	if buffer:get_lexer() ~= "dmd" then return end
 	buffer:annotation_clear_all()
 	local command = M.PATH_TO_DSCANNER .. " --styleCheck " .. buffer.filename
-	local p = spawn(command)
+	local p = os.spawn(command)
 	local result = p:read("*a") or ""
 	for line in result:gmatch("(.-)\r?\n") do
 		lineNumber, column, level, message = string.match(line, "^.-%((%d+):(%d+)%)%[(%w+)%]: (.+)$")
@@ -329,14 +334,14 @@ end)
 
 if not _G.WIN32 then
 	-- Spawn the dcd-server
-	M.serverProcess = spawn(M.PATH_TO_DCD_SERVER, nil, function() end, function() end)
+	M.serverProcess = os.spawn(M.PATH_TO_DCD_SERVER, nil, function() end, function() end)
 
 	-- Set an event handler that shuts down the DCD server, but only if this
 	-- module successfully started it. Do nothing if somebody else owns the
 	-- server instance
 	events.connect(events.QUIT, function()
 		if (M.serverProcess:status() == "running") then
-			spawn(M.PATH_TO_DCD_CLIENT .. " --shutdown")
+			os.spawn(M.PATH_TO_DCD_CLIENT .. " --shutdown")
 			_G.timeout(1, function()
 				if (M.serverProcess:status() == "running") then
 					M.serverProcess:kill()
