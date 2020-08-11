@@ -22,7 +22,7 @@ function M.continue_block_comment(block_start_chars, block_middle_chars,
 	-- Check with the lexer to see if we're actually in a comment. Otherwise
 	-- this code will think that a multi-line multiplication is a C comment
 	-- because of lines beginning with "*"
-	if buffer.style_name[buffer.style_at[buffer.current_pos]] ~= "comment" then
+	if buffer:name_of_style(buffer.style_at[buffer.current_pos]) ~= "comment" then
 		return true
 	end
 

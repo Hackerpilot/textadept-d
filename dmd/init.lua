@@ -48,18 +48,18 @@ M.kindToIconMapping['p'] = M.kindToIconMapping['t']
 M.kindToIconMapping['T'] = M.kindToIconMapping['t']
 
 local function registerImages()
-	buffer:register_image(M.kindToIconMapping['c'], icons.CLASS)
-	buffer:register_image(M.kindToIconMapping['e'], icons.ENUM)
-	buffer:register_image(M.kindToIconMapping['f'], icons.FUNCTION)
-	buffer:register_image(M.kindToIconMapping['i'], icons.INTERFACE)
-	buffer:register_image(M.kindToIconMapping['k'], icons.KEYWORD)
-	buffer:register_image(M.kindToIconMapping['l'], icons.ALIAS)
-	buffer:register_image(M.kindToIconMapping['M'], icons.MODULE)
-	buffer:register_image(M.kindToIconMapping['P'], icons.PACKAGE)
-	buffer:register_image(M.kindToIconMapping['s'], icons.STRUCT)
-	buffer:register_image(M.kindToIconMapping['t'], icons.TEMPLATE)
-	buffer:register_image(M.kindToIconMapping['u'], icons.UNION)
-	buffer:register_image(M.kindToIconMapping['v'], icons.FIELD)
+	view:register_image(M.kindToIconMapping['c'], icons.CLASS)
+	view:register_image(M.kindToIconMapping['e'], icons.ENUM)
+	view:register_image(M.kindToIconMapping['f'], icons.FUNCTION)
+	view:register_image(M.kindToIconMapping['i'], icons.INTERFACE)
+	view:register_image(M.kindToIconMapping['k'], icons.KEYWORD)
+	view:register_image(M.kindToIconMapping['l'], icons.ALIAS)
+	view:register_image(M.kindToIconMapping['M'], icons.MODULE)
+	view:register_image(M.kindToIconMapping['P'], icons.PACKAGE)
+	view:register_image(M.kindToIconMapping['s'], icons.STRUCT)
+	view:register_image(M.kindToIconMapping['t'], icons.TEMPLATE)
+	view:register_image(M.kindToIconMapping['u'], icons.UNION)
+	view:register_image(M.kindToIconMapping['v'], icons.FIELD)
 end
 
 local function showCompletionList(r)
@@ -88,7 +88,7 @@ end
 
 local function showCurrentCallTip()
 	local tip = calltips[currentCalltip]
-	buffer:call_tip_show(buffer:word_start_position(buffer.current_pos),
+	view:call_tip_show(buffer:word_start_position(buffer.current_pos),
 		string.format("%d of %d\1\2\n%s", currentCalltip, #calltips,
 			calltips[currentCalltip]:gsub("(%f[\\])\\n", "%1\n")
 			:gsub("\\\\n", "\\n")))
@@ -120,7 +120,7 @@ local function cycleCalltips(delta)
 end
 
 local function runDCDClient(args)
-	local command = M.PATH_TO_DCD_CLIENT .. " " .. args .. " -c" .. buffer.current_pos
+	local command = M.PATH_TO_DCD_CLIENT .. " " .. args .. " -c" .. buffer.current_pos - 1
 	local p = os.spawn(command)
 	p:write(buffer:get_text():sub(1, buffer.length))
 	p:close()
@@ -355,19 +355,19 @@ end
 
 -- Key bindings
 keys.dmd = {
-	['a\n'] = cstyle.newline,
-	['s\n'] = cstyle.newline_semicolon,
-	['c;'] = cstyle.endline_semicolon,
+	['alt+\n'] = cstyle.newline,
+	['shift+\n'] = cstyle.newline_semicolon,
+	['ctrl+;'] = cstyle.endline_semicolon,
 	['}'] = cstyle.match_brace_indent,
-	['c{'] = function() return cstyle.openBraceMagic(true) end,
+	['ctrl+{'] = function() return cstyle.openBraceMagic(true) end,
 	['\n'] = cstyle.enter_key_pressed,
-	['c\n'] = autocomplete,
-	['cH'] = showDoc,
+	['ctrl+\n'] = autocomplete,
+	['ctrl+H'] = showDoc,
 	['down'] = function() return cycleCalltips(1) end,
 	['up'] = function() return cycleCalltips(-1) end,
-	['cG'] = M.gotoDeclaration,
-	['caG'] = M.goBack,
-	['cM'] = symbolIndex,
+	['ctrl+G'] = M.gotoDeclaration,
+	['ctrl+alt+G'] = M.goBack,
+	['ctrl+M'] = symbolIndex,
 	['f7'] = function()
 		if buffer.use_tabs then
 			textadept.editing.filter_through(M.PATH_TO_DFMT .. " --indent_style=tab")
