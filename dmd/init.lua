@@ -204,7 +204,7 @@ end
 
 local function onSymbolListSelection(list, item)
 	list:close()
-	buffer:goto_line(item[4] - 1)
+	buffer:goto_line(item[4])
 	buffer:vertical_centre_caret()
 end
 
@@ -237,7 +237,7 @@ local function symbolIndex()
 				table.insert(symbolList, expandContext(meta))
 				table.insert(symbolList, lineNumber)
 			end
-			lineDict[i + 1] = tonumber(lineNumber - 1)
+			lineDict[i + 1] = tonumber(lineNumber)
 			i = i + 1
 		end
 	end
