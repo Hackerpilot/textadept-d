@@ -303,7 +303,7 @@ events.connect(events.FILE_AFTER_SAVE, function()
 	for line in result:gmatch("(.-)\r?\n") do
 		lineNumber, column, level, message = string.match(line, "^.-%((%d+):(%d+)%)%[(%w+)%]: (.+)$")
 		if lineNumber == nil then return end
-		local l = tonumber(lineNumber) - 1
+		local l = tonumber(lineNumber)
 		if l >= 0 then
 			local c = tonumber(column)
 			if level == "error" then
